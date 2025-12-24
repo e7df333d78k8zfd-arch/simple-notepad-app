@@ -1,1069 +1,252 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全部盛りメモ帳</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<title>全部盛りメモ帳</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #3498db;
-            --dark: #2c3e50;
-            --light: #ecf0f1;
-        }
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+}
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+header {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.toolbar {
+    background: #fff;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.btn {
+    border: none;
+    border-radius: 5px;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+.btn-success { background:#2ecc71;color:#fff }
+.btn-info { background:#3498db;color:#fff }
+.btn-warning { background:#f39c12;color:#fff }
+.btn-danger { background:#e74c3c;color:#fff }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .toolbar {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-        }
-
-        .sidebar {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-height: 700px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .search-box {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
-
-        .filter-buttons {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 5px 10px;
-            border: 1px solid var(--primary);
-            background: white;
-            color: var(--primary);
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        .filter-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .notes-list {
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .note-item {
-            background: #f7f7f7;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-left: 4px solid var(--primary);
-            position: relative;
-        }
-
-        .note-item:hover {
-            background: #efefef;
-            transform: translateX(5px);
-        }
-
-        .note-item.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .note-item.pinned {
-            border-left-color: var(--warning);
-        }
-
-        .note-item.pinned::before {
-            content: "📌";
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            font-size: 0.8rem;
-        }
-
-        .note-tags {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-            margin-top: 5px;
-        }
-
-        .tag {
-            background: var(--info);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.7rem;
-        }
-
-        .note-item.active .tag {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .editor-section {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .editor-toolbar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #5568d3; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { background: #27ae60; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { background: #c0392b; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-warning:hover { background: #e67e22; }
-        .btn-info { background: var(--info); color: white; }
-        .btn-info:hover { background: #2980b9; }
-
-        .btn-group {
-            display: flex;
-            gap: 5px;
-        }
-
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            margin-bottom: 10px;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        #noteTitle {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        textarea {
-            width: 100%;
-            flex: 1;
-            min-height: 400px;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-family: inherit;
-            resize: vertical;
-            line-height: 1.6;
-        }
-
-        .editor-stats {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            background: #f7f7f7;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: #666;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .tag-input-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .color-picker {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .color-option {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .color-option.selected {
-            border-color: var(--dark);
-            transform: scale(1.2);
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #999;
-            padding: 50px;
-        }
-
-        .categories {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .category-btn {
-            padding: 8px 15px;
-            border: 2px solid var(--primary);
-            background: white;
-            color: var(--primary);
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-
-        .category-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        select {
-            padding: 8px 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        .markdown-preview {
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 5px;
-            min-height: 400px;
-        }
-
-        .markdown-preview h1 { font-size: 2rem; margin: 20px 0 10px; }
-        .markdown-preview h2 { font-size: 1.5rem; margin: 15px 0 10px; }
-        .markdown-preview h3 { font-size: 1.2rem; margin: 10px 0 5px; }
-        .markdown-preview p { margin: 10px 0; }
-        .markdown-preview code { 
-            background: #e0e0e0; 
-            padding: 2px 6px; 
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-        }
-        .markdown-preview pre {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-        }
-        .markdown-preview ul, .markdown-preview ol {
-            margin: 10px 0 10px 30px;
-        }
-        .markdown-preview blockquote {
-            border-left: 4px solid var(--primary);
-            padding-left: 15px;
-            margin: 10px 0;
-            color: #666;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            .toolbar {
-                justify-content: center;
-            }
-        }
-    </style>
+.main {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 15px;
+    margin-top: 15px;
+}
+.sidebar, .editor {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+}
+.notes-list {
+    margin-top: 10px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+.note-item {
+    background: #f5f5f5;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border-left: 5px solid #667eea;
+}
+.note-item.active {
+    background: #667eea;
+    color: #fff;
+}
+input[type="text"], textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+textarea {
+    min-height: 300px;
+    margin-top: 10px;
+}
+.empty {
+    text-align: center;
+    color: #999;
+    padding: 50px;
+}
+.stats {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+@media(max-width:768px){
+    .main{grid-template-columns:1fr;}
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <h1>📝 全部盛りメモ帳</h1>
-            <p>高機能メモアプリ - 検索・タグ・カテゴリ・Markdown・エクスポート対応</p>
-        </header>
+<div class="container">
+<header>
+    <h1>📝 全部盛りメモ帳</h1>
+    <p>完全ローカル / 自動保存</p>
+</header>
 
-        <div class="toolbar">
-            <button class="btn btn-success" onclick="createNewNote()">➕ 新規</button>
-            <button class="btn btn-info" onclick="exportAllNotes()">💾 エクスポート</button>
-            <button class="btn btn-warning" onclick="importNotes()">📥 インポート</button>
-            <button class="btn btn-primary" onclick="openSettings()">⚙️ 設定</button>
-            <select id="sortOrder" onchange="renderNotesList()">
-                <option value="updated">更新日順</option>
-                <option value="created">作成日順</option>
-                <option value="title">タイトル順</option>
-            </select>
-            <select id="viewMode" onchange="changeViewMode()">
-                <option value="edit">編集モード</option>
-                <option value="preview">プレビューモード</option>
-                <option value="split">分割モード</option>
-            </select>
-        </div>
+<div class="toolbar">
+    <button class="btn btn-success" onclick="createNewNote()">➕ 新規</button>
+    <button class="btn btn-info" onclick="exportNotes()">💾 エクスポート</button>
+    <button class="btn btn-warning" onclick="document.getElementById('import').click()">📥 インポート</button>
+    <button class="btn btn-danger" onclick="clearAll()">🗑 全削除</button>
+    <input type="file" id="import" accept=".json" hidden onchange="importNotes(event)">
+</div>
 
-        <div class="main-content">
-            <div class="sidebar">
-                <input type="text" class="search-box" id="searchBox" placeholder="🔍 検索..." oninput="filterNotes()">
-                
-                <div class="categories" id="categoriesFilter"></div>
-                
-                <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">全て</button>
-                    <button class="filter-btn" data-filter="pinned" onclick="setFilter('pinned')">📌 ピン留め</button>
-                    <button class="filter-btn" data-filter="favorites" onclick="setFilter('favorites')">⭐ お気に入り</button>
-                </div>
-
-                <div class="notes-list" id="notesList"></div>
-            </div>
-
-            <div class="editor-section">
-                <div id="editorArea">
-                    <div class="empty-state">
-                        <h2>🎉 メモを選択または新規作成してください</h2>
-                        <p>左側のサイドバーから選択するか、「新規」ボタンをクリック</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="main">
+    <div class="sidebar">
+        <input type="text" id="search" placeholder="🔍 検索" oninput="renderList()">
+        <div class="notes-list" id="notesList"></div>
     </div>
 
-    <!-- タグ管理モーダル -->
-    <div class="modal" id="tagsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>🏷️ タグ管理</h2>
-                <button class="close-btn" onclick="closeModal('tagsModal')">×</button>
-            </div>
-            <div class="tag-input-container">
-                <input type="text" id="newTag" placeholder="新しいタグ">
-                <button class="btn btn-primary" onclick="addTag()">追加</button>
-            </div>
-            <div id="currentTags"></div>
+    <div class="editor">
+        <div id="editorArea" class="empty">
+            メモを選択するか新規作成してください
         </div>
     </div>
+</div>
+</div>
 
-    <!-- カテゴリ選択モーダル -->
-    <div class="modal" id="categoryModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📁 カテゴリ選択</h2>
-                <button class="close-btn" onclick="closeModal('categoryModal')">×</button>
-            </div>
-            <div id="categoryList"></div>
-            <div style="margin-top: 20px;">
-                <input type="text" id="newCategory" placeholder="新しいカテゴリ">
-                <button class="btn btn-success" onclick="addCategory()">作成</button>
-            </div>
+<script>
+let notes = [];
+let currentId = null;
+
+/* ---------- 初期化 ---------- */
+window.onload = () => {
+    const saved = localStorage.getItem("notes");
+    if(saved) notes = JSON.parse(saved);
+    renderList();
+};
+
+/* ---------- 保存 ---------- */
+function save(){
+    localStorage.setItem("notes", JSON.stringify(notes));
+}
+
+/* ---------- 新規 ---------- */
+function createNewNote(){
+    const note = {
+        id: Date.now(),
+        title: "",
+        content: "",
+        created: new Date().toISOString(),
+        updated: new Date().toISOString()
+    };
+    notes.unshift(note);
+    currentId = note.id;
+    save();
+    renderList();
+    renderEditor();
+}
+
+/* ---------- 一覧 ---------- */
+function renderList(){
+    const list = document.getElementById("notesList");
+    const word = document.getElementById("search").value.toLowerCase();
+
+    const filtered = notes.filter(n =>
+        n.title.toLowerCase().includes(word) ||
+        n.content.toLowerCase().includes(word)
+    );
+
+    if(filtered.length === 0){
+        list.innerHTML = "<div class='empty'>メモなし</div>";
+        return;
+    }
+
+    list.innerHTML = filtered.map(n => `
+        <div class="note-item ${n.id===currentId?'active':''}"
+            onclick="selectNote(${n.id})">
+            <strong>${n.title || "無題"}</strong><br>
+            <small>${new Date(n.updated).toLocaleString()}</small>
         </div>
-    </div>
+    `).join("");
+}
 
-    <!-- 色選択モーダル -->
-    <div class="modal" id="colorModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>🎨 メモの色を選択</h2>
-                <button class="close-btn" onclick="closeModal('colorModal')">×</button>
-            </div>
-            <div class="color-picker" id="colorPicker"></div>
+/* ---------- 選択 ---------- */
+function selectNote(id){
+    currentId = id;
+    renderList();
+    renderEditor();
+}
+
+/* ---------- 編集 ---------- */
+function renderEditor(){
+    const note = notes.find(n=>n.id===currentId);
+    if(!note) return;
+
+    document.getElementById("editorArea").innerHTML = `
+        <input type="text" value="${note.title}"
+            placeholder="タイトル"
+            oninput="update('title',this.value)">
+        <textarea oninput="update('content',this.value)">${note.content}</textarea>
+        <div class="stats">
+            作成: ${new Date(note.created).toLocaleString()} /
+            更新: ${new Date(note.updated).toLocaleString()}
         </div>
-    </div>
+    `;
+}
 
-    <!-- 設定モーダル -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>⚙️ 設定</h2>
-                <button class="close-btn" onclick="closeModal('settingsModal')">×</button>
-            </div>
-            <h3>パスワード保護</h3>
-            <input type="password" id="passwordInput" placeholder="パスワード（任意）">
-            <button class="btn btn-primary" onclick="setPassword()">設定</button>
-            <hr style="margin: 20px 0;">
-            <h3>データ管理</h3>
-            <button class="btn btn-danger" onclick="clearAllData()">全データ削除</button>
-        </div>
-    </div>
+function update(field,value){
+    const note = notes.find(n=>n.id===currentId);
+    if(!note) return;
+    note[field]=value;
+    note.updated=new Date().toISOString();
+    save();
+    renderList();
+}
 
-    <input type="file" id="importFile" style="display:none" accept=".json" onchange="handleImport(event)">
+/* ---------- エクスポート ---------- */
+function exportNotes(){
+    const blob = new Blob([JSON.stringify(notes,null,2)],{type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "notes.json";
+    a.click();
+}
 
-    <script>
-        let notes = [];
-        let currentNoteId = null;
-        let currentFilter = 'all';
-        let currentCategory = null;
-        let categories = ['仕事', '個人', 'アイデア', 'TODO'];
-        let colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#feca57', '#ff6b6b', '#ee5a6f'];
+/* ---------- インポート ---------- */
+function importNotes(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+        notes = JSON.parse(reader.result);
+        save();
+        currentId=null;
+        renderList();
+        document.getElementById("editorArea").innerHTML="<div class='empty'>読み込み完了</div>";
+    };
+    reader.readAsText(file);
+}
 
-        window.onload = function() {
-            loadNotes();
-            loadCategories();
-            renderNotesList();
-            renderCategoriesFilter();
-        };
-
-        function loadNotes() {
-            const stored = localStorage.getItem('notes');
-            if (stored) {
-                notes = JSON.parse(stored);
-            }
-        }
-
-        function saveToStorage() {
-            localStorage.setItem('notes', JSON.stringify(notes));
-        }
-
-        function loadCategories() {
-            const stored = localStorage.getItem('categories');
-            if (stored) {
-                categories = JSON.parse(stored);
-            }
-        }
-
-        function saveCategories() {
-            localStorage.setItem('categories', JSON.stringify(categories));
-        }
-
-        function filterNotes() {
-            renderNotesList();
-        }
-
-        function setFilter(filter) {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.filter === filter);
-            });
-            renderNotesList();
-        }
-
-        function renderCategoriesFilter() {
-            const container = document.getElementById('categoriesFilter');
-            container.innerHTML = `
-                <button class="category-btn ${!currentCategory ? 'active' : ''}" onclick="filterByCategory(null)">全て</button>
-                ${categories.map(cat => `
-                    <button class="category-btn ${currentCategory === cat ? 'active' : ''}" 
-                            onclick="filterByCategory('${cat}')">${cat}</button>
-                `).join('')}
-            `;
-        }
-
-        function filterByCategory(category) {
-            currentCategory = category;
-            renderCategoriesFilter();
-            renderNotesList();
-        }
-
-        function renderNotesList() {
-            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
-            const sortOrder = document.getElementById('sortOrder').value;
-            
-            let filtered = notes.filter(note => {
-                const matchesSearch = note.title.toLowerCase().includes(searchTerm) || 
-                                     note.content.toLowerCase().includes(searchTerm);
-                const matchesFilter = currentFilter === 'all' || 
-                                     (currentFilter === 'pinned' && note.pinned) ||
-                                     (currentFilter === 'favorites' && note.favorite);
-                const matchesCategory = !currentCategory || note.category === currentCategory;
-                
-                return matchesSearch && matchesFilter && matchesCategory;
-            });
-
-            filtered.sort((a, b) => {
-                if (sortOrder === 'updated') return new Date(b.updatedAt) - new Date(a.updatedAt);
-                if (sortOrder === 'created') return new Date(b.createdAt) - new Date(a.createdAt);
-                if (sortOrder === 'title') return a.title.localeCompare(b.title);
-            });
-
-            // ピン留めを最上位に
-            filtered.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
-
-            const listContainer = document.getElementById('notesList');
-            
-            if (filtered.length === 0) {
-                listContainer.innerHTML = '<div class="empty-state"><p>メモが見つかりません</p></div>';
-                return;
-            }
-
-            listContainer.innerHTML = filtered.map(note => `
-                <div class="note-item ${currentNoteId === note.id ? 'active' : ''} ${note.pinned ? 'pinned' : ''}" 
-                     onclick="selectNote(${note.id})"
-                     style="border-left-color: ${note.color || '#667eea'}">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <h3>${note.title || '無題のメモ'}</h3>
-                        ${note.favorite ? '<span>⭐</span>' : ''}
-                    </div>
-                    <p>${note.content.substring(0, 60)}${note.content.length > 60 ? '...' : ''}</p>
-                    ${note.tags && note.tags.length > 0 ? `
-                        <div class="note-tags">
-                            ${note.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                        </div>
-                    ` : ''}
-                    <small>${new Date(note.updatedAt).toLocaleString('ja-JP')}</small>
-                </div>
-            `).join('');
-        }
-
-        function createNewNote() {
-            const newNote = {
-                id: Date.now(),
-                title: '',
-                content: '',
-                tags: [],
-                category: currentCategory || categories[0],
-                color: colors[0],
-                pinned: false,
-                favorite: false,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            
-            notes.unshift(newNote);
-            currentNoteId = newNote.id;
-            saveToStorage();
-            renderNotesList();
-            renderEditor();
-        }
-
-        function selectNote(id) {
-            currentNoteId = id;
-            renderNotesList();
-            renderEditor();
-        }
-
-        function changeViewMode() {
-            renderEditor();
-        }
-
-        function renderEditor() {
-            const note = notes.find(n => n.id === currentNoteId);
-            if (!note) {
-                document.getElementById('editorArea').innerHTML = `
-                    <div class="empty-state">
-                        <h2>🎉 メモを選択または新規作成してください</h2>
-                    </div>
-                `;
-                return;
-            }
-
-            const viewMode = document.getElementById('viewMode').value;
-            
-            let editorHTML = `
-                <div class="editor-toolbar">
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="saveNote()">💾 保存</button>
-                        <button class="btn btn-success" onclick="autoSave()">⚡ 自動保存ON</button>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn ${note.pinned ? 'btn-warning' : 'btn-info'}" onclick="togglePin()">
-                            ${note.pinned ? '📌 ピン解除' : '📌 ピン留め'}
-                        </button>
-                        <button class="btn ${note.favorite ? 'btn-warning' : 'btn-info'}" onclick="toggleFavorite()">
-                            ${note.favorite ? '⭐ 解除' : '⭐ お気に入り'}
-                        </button>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-info" onclick="openTagsModal()">🏷️ タグ</button>
-                        <button class="btn btn-info" onclick="openCategoryModal()">📁 カテゴリ</button>
-                        <button class="btn btn-info" onclick="openColorModal()">🎨 色</button>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-success" onclick="exportNote()">📤 エクスポート</button>
-                        <button class="btn btn-danger" onclick="deleteNote()">🗑️ 削除</button>
-                    </div>
-                </div>
-                <input type="text" id="noteTitle" placeholder="タイトル" value="${note.title}" oninput="updateStats()">
-            `;
-
-            if (viewMode === 'edit') {
-                editorHTML += `
-                    <textarea id="noteContent" placeholder="ここにメモを入力...
-Markdownに対応しています" oninput="updateStats()">${note.content}</textarea>
-                `;
-            } else if (viewMode === 'preview') {
-                editorHTML += `
-                    <div class="markdown-preview" id="markdownPreview">${renderMarkdown(note.content)}</div>
-                `;
-            } else if (viewMode === 'split') {
-                editorHTML += `
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1;">
-                        <textarea id="noteContent" placeholder="ここにメモを入力..." oninput="updateSplitPreview()" style="min-height: 500px;">${note.content}</textarea>
-                        <div class="markdown-preview" id="markdownPreview" style="min-height: 500px;">${renderMarkdown(note.content)}</div>
-                    </div>
-                `;
-            }
-
-            editorHTML += `
-                <div class="editor-stats">
-                    <span>📝 文字数: <strong id="charCount">0</strong></span>
-                    <span>📄 行数: <strong id="lineCount">0</strong></span>
-                    <span>⏱️ 最終更新: <strong>${new Date(note.updatedAt).toLocaleString('ja-JP')}</strong></span>
-                </div>
-            `;
-
-            document.getElementById('editorArea').innerHTML = editorHTML;
-            updateStats();
-        }
-
-        function updateStats() {
-            const content = document.getElementById('noteContent')?.value || '';
-            const title = document.getElementById('noteTitle')?.value || '';
-            
-            document.getElementById('charCount').textContent = (title + content).length;
-            document.getElementById('lineCount').textContent = content.split('\n').length;
-        }
-
-        function updateSplitPreview() {
-            const content = document.getElementById('noteContent').value;
-            document.getElementById('markdownPreview').innerHTML = renderMarkdown(content);
-            updateStats();
-        }
-
-        function renderMarkdown(text) {
-            let html = text
-                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                .replace(/`(.+?)`/g, '<code>$1</code>')
-                .replace(/^> (.+$)/gim, '<blockquote>$1</blockquote>')
-                .replace(/^\* (.+$)/gim, '<ul><li>$1</li></ul>')
-                .replace(/^\d+\. (.+$)/gim, '<ol><li>$1</li></ol>')
-                .replace(/\n/g, '<br>');
-            
-            return html || '<p>プレビュー内容がありません</p>';
-        }
-
-        function saveNote() {
-            if (!currentNoteId) return;
-
-            const title = document.getElementById('noteTitle')?.value || '';
-            const content = document.getElementById('noteContent')?.value || '';
-
-            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-            if (noteIndex !== -1) {
-                notes[noteIndex].title = title;
-                notes[noteIndex].content = content;
-                notes[noteIndex].updatedAt = new Date().toISOString();
-                
-                saveToStorage();
-                renderNotesList();
-                updateStats();
-                
-                alert('💾 保存しました！');
-            }
-        }
-
-        let autoSaveInterval;
-        function autoSave() {
-            if (autoSaveInterval) {
-                clearInterval(autoSaveInterval);
-                autoSaveInterval = null;
-                alert('⚡ 自動保存をOFFにしました');
-                return;
-            }
-            
-            autoSaveInterval = setInterval(() => {
-                if (currentNoteId) {
-                    const title = document.getElementById('noteTitle')?.value || '';
-                    const content = document.getElementById('noteContent')?.value || '';
-                    const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-                    if (noteIndex !== -1) {
-                        notes[noteIndex].title = title;
-                        notes[noteIndex].content = content;
-                        notes[noteIndex].updatedAt = new Date().toISOString();
-                        saveToStorage();
-                    }
-                }
-            }, 5000);
-            
-            alert('⚡ 自動保存をONにしました（5秒ごと）');
-        }
-
-        function togglePin() {
-            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-            if (noteIndex !== -1) {
-                notes[noteIndex].pinned = !notes[noteIndex].pinned;
-                saveToStorage();
-                renderNotesList();
-                renderEditor();
-            }
-        }
-
-        function toggleFavorite() {
-            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-            if (noteIndex !== -1) {
-                notes[noteIndex].favorite = !notes[noteIndex].favorite;
-                saveToStorage();
-                renderNotesList();
-                renderEditor();
-            }
-        }
-
-        function deleteNote() {
-            if (!currentNoteId || !confirm('本当に削除しますか？')) return;
-
-            notes = notes.filter(n => n.id !== currentNoteId);
-            currentNoteId = null;
-            
-            saveToStorage();
-            renderNotesList();
-            renderEditor();
-        }
-
-        function openTagsModal() {
-            const note = notes.find(n => n.id === currentNoteId);
-            if (!note) return;
-
-            document.getElementById('tagsModal').classList.add('active');
-            renderCurrentTags();
-        }
-
-        function renderCurrentTags() {
-            const note = notes.find(n => n.id === currentNoteId);
-            if (!note) return;
-
-            const container = document.getElementById('currentTags');
-            container.innerHTML = note.tags.map(tag => `
-                <span class="tag" style="margin: 5px; cursor: pointer;" onclick="removeTag('${tag}')">
-                    ${tag} ❌
-                </span>
-            `).join('');
-        }
-
-        function addTag() {
-            const tagInput = document.getElementById('newTag');
-            const tag = tagInput.value.trim();
-            
-            if (!tag) return;
-
-            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-            if (noteIndex !== -1) {
-                if (!notes[noteIndex].tags.includes(tag)) {
-                    notes[noteIndex].tags.push(tag);
-                    saveToStorage();
-                    renderCurrentTags();
-                    renderNotesList();
-                }
-                tagInput.value = '';
-            }
-        }
-
-        function removeTag(tag) {
-            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-            if (noteIndex !== -1) {
-                notes[noteIndex].tags = notes[noteIndex].tags.filter(t => t !== tag);
-                saveToStorage();
-                renderCurrentTags();
-                renderNotesList();
-            }
-        }
-
-        function openCategoryModal() {
-            document.getElementById('categoryModal').classList.add('active');
-            renderCategoryList();
-        }
-
-        function renderCategoryList() {
-            const note = notes.find(n => n.id === currentNoteId);
-            const container = document.getElementById('categoryList');
-            
-            container.innerHTML = categories.map(cat => `
-                <button class="category-btn ${note?.category === cat ? 'active' : ''}" 
-                        onclick="setNoteCategory('${cat}')" 
-                        style="width: 100%; margin: 5px 0;">
-                    ${cat}
-                </button>
-            `).join('');
-        }
-
-        function setNoteCategory(category) {
-            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-            if (noteIndex !== -1) {
-                notes[noteIndex].category = category;
-                saveToStorage();
-                renderNotesList();
-                closeModal('categoryModal');
-            }
-        }
-
-        function addCategory() {
-            const input = document.getElementById('newCategory');
-            const category = input.value.trim();
-            
-            if (category && !categories.includes(category)) {
-                categories.push(category);
-                saveCategories();
-                renderCategoriesFilter();
-                renderCategoryList();
-                input.value = '';
-            }
-        }
-
-        function openColorModal() {
-            document.getElementById('colorModal').classList.add('active');
-            renderColorPicker();
-        }
-
-        function renderColorPicker() {
-            const note = notes.find(n => n.id === currentNoteId);
-            const container = document.getElementById('colorPicker');
-            
-            container.innerHTML = colors.map(color => `
-                <div class="color-option ${note?.color === color ? 'selected' : ''}" 
-                     style="background: ${color};"
-                     onclick="setNoteColor('${color}')">
-                </div>
-            `).join('');
-        }
-
-        function setNoteColor(color) {
-            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
-            if (noteIndex !== -1) {
-                notes[noteIndex].color = color;
-                saveToStorage();
-                renderNotesList();
-                closeModal('colorModal');
-            }
-        }
-
-        function exportNote() {
-            const note = notes.find(n => n.id === currentNoteId);
-            if (!note) return;
-
-            const dataStr = JSON.stringify(note, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${note.title || 'note'}_${Date.now()}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function exportAllNotes() {
-            if (notes.length === 0) {
-                alert('エクスポートするメモがありません');
-                return;
-            }
-
-            const dataStr = JSON.stringify(notes, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `all_notes_${Date.now()}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-            
-            alert('📤 全てのメモをエクスポートしました！');
-        }
-
-        function importNotes() {
-            document.getElementById('importFile').click();
-        }
-
-        function handleImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    
-                    if (Array.isArray(imported)) {
-                        notes = [...notes, ...imported];
-                    } else {
-                        notes.push(imported);
-                    }
-                    
-                    saveToStorage();
-                    renderNotesList();
-                    alert('📥 インポートしました！');
-                } catch (err) {
-                    alert('❌ ファイルの読み込みに失敗しました');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function openSettings() {
-            document.getElementById('settingsModal').classList.add('active');
-        }
-
-        function setPassword() {
-            const password = document.getElementById('passwordInput').value;
-            if (password) {
-                localStorage.setItem('appPassword', password);
-                alert('🔒 パスワードを設定しました');
-            }
-        }
-
-        function clearAllData() {
-            if (confirm('⚠️ 本当に全てのデータを削除しますか？この操作は取り消せません！')) {
-                if (confirm('最終確認：本当に削除しますか？')) {
-                    localStorage.clear();
-                    notes = [];
-                    categories = ['仕事', '個人', 'アイデア', 'TODO'];
-                    currentNoteId = null;
-                    renderNotesList();
-                    renderEditor();
-                    renderCategoriesFilter();
-                    alert('🗑️ 全てのデータを削除しました');
-                    closeModal('settingsModal');
-                }
-            }
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        // モーダル外クリックで閉じる
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                }
-            });
-        });
-
-        // キーボードショートカット
-        document.addEventListener('keydown', function(e) {
-            // Ctrl+S で保存
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                saveNote();
-            }
-            // Ctrl+N で新規作成
-            if (e.ctrlKey && e.key === 'n') {
-                e.preventDefault();
-                createNewNote();
-            }
-            // ESC でモーダルを閉じる
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
-            }
-        });
+/* ---------- 全削除 ---------- */
+function clearAll(){
+    if(confirm("全メモ削除しますか？")){
+        notes=[];
+        currentId=null;
+        save();
+        renderList();
+        document.getElementById("editorArea").innerHTML="<div class='empty'>削除済み</div>";
+    }
+}
+</script>
+</body>
+</html>
