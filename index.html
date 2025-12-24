@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>全部盛りメモ帳</title>
+<title>1メモ1ファイル メモ帳</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -98,16 +98,16 @@ textarea {
 <body>
 <div class="container">
 <header>
-    <h1>📝 全部盛りメモ帳</h1>
-    <p>完全ローカル / 自動保存</p>
+    <h1>📝 1メモ1ファイル メモ帳</h1>
+    <p>ファイル単位管理 / 完全ローカル</p>
 </header>
 
 <div class="toolbar">
     <button class="btn btn-success" onclick="createNewNote()">➕ 新規</button>
-    <button class="btn btn-info" onclick="exportNotes()">💾 エクスポート</button>
-    <button class="btn btn-warning" onclick="document.getElementById('import').click()">📥 インポート</button>
-    <button class="btn btn-danger" onclick="clearAll()">🗑 全削除</button>
-    <input type="file" id="import" accept=".json" hidden onchange="importNotes(event)">
+    <button class="btn btn-info" onclick="saveCurrentNote()">💾 このメモを保存</button>
+    <button class="btn btn-warning" onclick="document.getElementById('import').click()">📥 読み込み</button>
+    <button class="btn btn-danger" onclick="deleteCurrent()">🗑 削除</button>
+    <input type="file" id="import" hidden multiple onchange="importNotes(event)">
 </div>
 
 <div class="main">
@@ -118,7 +118,7 @@ textarea {
 
     <div class="editor">
         <div id="editorArea" class="empty">
-            メモを選択するか新規作成してください
+            メモを選択または新規作成してください
         </div>
     </div>
 </div>
@@ -128,19 +128,7 @@ textarea {
 let notes = [];
 let currentId = null;
 
-/* ---------- 初期化 ---------- */
-window.onload = () => {
-    const saved = localStorage.getItem("notes");
-    if(saved) notes = JSON.parse(saved);
-    renderList();
-};
-
-/* ---------- 保存 ---------- */
-function save(){
-    localStorage.setItem("notes", JSON.stringify(notes));
-}
-
-/* ---------- 新規 ---------- */
+/* 新規 */
 function createNewNote(){
     const note = {
         id: Date.now(),
@@ -151,12 +139,11 @@ function createNewNote(){
     };
     notes.unshift(note);
     currentId = note.id;
-    save();
     renderList();
     renderEditor();
 }
 
-/* ---------- 一覧 ---------- */
+/* 一覧 */
 function renderList(){
     const list = document.getElementById("notesList");
     const word = document.getElementById("search").value.toLowerCase();
@@ -180,14 +167,14 @@ function renderList(){
     `).join("");
 }
 
-/* ---------- 選択 ---------- */
+/* 選択 */
 function selectNote(id){
     currentId = id;
     renderList();
     renderEditor();
 }
 
-/* ---------- 編集 ---------- */
+/* 編集 */
 function renderEditor(){
     const note = notes.find(n=>n.id===currentId);
     if(!note) return;
@@ -209,42 +196,64 @@ function update(field,value){
     if(!note) return;
     note[field]=value;
     note.updated=new Date().toISOString();
-    save();
     renderList();
 }
 
-/* ---------- エクスポート ---------- */
-function exportNotes(){
-    const blob = new Blob([JSON.stringify(notes,null,2)],{type:"application/json"});
+/* ✅ このメモだけ保存 */
+function saveCurrentNote(){
+    const note = notes.find(n=>n.id===currentId);
+    if(!note){
+        alert("保存するメモがありません");
+        return;
+    }
+
+    const name = prompt(
+        "保存するファイル名（拡張子含む）",
+        (note.title || "memo") + ".json"
+    );
+    if(!name) return;
+
+    const blob = new Blob(
+        [JSON.stringify(note,null,2)],
+        {type:"application/octet-stream"}
+    );
+
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "notes.json";
+    a.download = name;
     a.click();
 }
 
-/* ---------- インポート ---------- */
+/* ✅ 複数ファイル読み込み（1ファイル=1メモ） */
 function importNotes(e){
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ()=>{
-        notes = JSON.parse(reader.result);
-        save();
-        currentId=null;
-        renderList();
-        document.getElementById("editorArea").innerHTML="<div class='empty'>読み込み完了</div>";
-    };
-    reader.readAsText(file);
+    const files = Array.from(e.target.files);
+    if(files.length === 0) return;
+
+    files.forEach(file=>{
+        const reader = new FileReader();
+        reader.onload = ()=>{
+            try{
+                const note = JSON.parse(reader.result);
+                note.id = Date.now() + Math.random();
+                notes.unshift(note);
+                renderList();
+            }catch{
+                alert(file.name + " は読み込めません");
+            }
+        };
+        reader.readAsText(file);
+    });
 }
 
-/* ---------- 全削除 ---------- */
-function clearAll(){
-    if(confirm("全メモ削除しますか？")){
-        notes=[];
-        currentId=null;
-        save();
+/* 削除 */
+function deleteCurrent(){
+    if(!currentId) return;
+    if(confirm("このメモを削除しますか？")){
+        notes = notes.filter(n=>n.id!==currentId);
+        currentId = null;
         renderList();
-        document.getElementById("editorArea").innerHTML="<div class='empty'>削除済み</div>";
+        document.getElementById("editorArea").innerHTML =
+            "<div class='empty'>削除しました</div>";
     }
 }
 </script>
